@@ -1,4 +1,4 @@
-package com.example.callun
+package com.pariaslab.callun
 
 import org.junit.Test
 
