@@ -19,16 +19,17 @@ class MainActivity : AppCompatActivity() {
         //resources
         val moonPhaseIcon = findViewById<ImageView>(R.id.moonIcon)
         val moonPhaseTxt = findViewById<TextView>(R.id.moonPhaseTxt)
+        val selectDateEditText = findViewById<EditText>(R.id.selectDateEditText)
+
+        fun updateUi(date: Calendar) {
+            selectDateEditText.setText(getSelectedDateTxt(date))
+            moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
+            moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) *100.0)
+        }
 
         val currentCalendar = Calendar.getInstance()
         var selectedDate = currentCalendar
-
-        val selectDateEditText = findViewById<EditText>(R.id.selectDateEditText)
-
-        // VER: reutilizar
-        selectDateEditText.setText(getSelectedDateTxt(selectedDate))
-        moonPhaseIcon.setImageResource(getMoonLapseIcon(selectedDate))
-        moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(selectedDate) *100.0)
+        updateUi(selectedDate)
 
         selectDateEditText.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -42,11 +43,7 @@ class MainActivity : AppCompatActivity() {
                     val selectedCalendar = Calendar.getInstance()
                     selectedCalendar.set(year, month, dayOfMonth)
                     selectedDate = selectedCalendar
-
-                    // VER: reutilizar
-                    moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(selectedDate) *100.0)
-                    selectDateEditText.setText(getSelectedDateTxt(selectedDate))
-                    moonPhaseIcon.setImageResource(getMoonLapseIcon(selectedDate))
+                    updateUi(selectedDate)
                 },
                 year,
                 month,
