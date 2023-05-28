@@ -1,9 +1,12 @@
 package com.pariaslab.callun
 
+import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.view.GestureDetector
 import android.view.MotionEvent
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -14,7 +17,7 @@ import java.util.*
 
 class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var gestureDetector: GestureDetector
-    private val swipeScaleFactor = 0.07f // Scale factor for swipe displacement of days
+    private var swipeScaleFactor: Float = 0.1f // Scale factor for swipe displacement of days
     private var isScrolling = false // Indicador de si se está realizando un desplazamiento
 
     private lateinit var selectDateEditText: EditText
@@ -23,6 +26,11 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     private val currentCalendar: Calendar = Calendar.getInstance()
     private var selectedDate: Calendar = currentCalendar
+
+    companion object {
+        private const val REQUEST_SETTINGS = 1
+        private const val DEFAULT_SWIPE_SCALE_FACTOR = 0.1f
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +49,11 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             gestureDetector.onTouchEvent(event)
             handleTouchEvent(event)
             true
+        }
+
+        val settingsButton = findViewById<Button>(R.id.settingsButton)
+        settingsButton.setOnClickListener {
+            showSettingsScreen()
         }
 
         selectDateEditText.setOnClickListener {
@@ -63,6 +76,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             )
             datePickerDialog.show()
         }
+
     }
 
     override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
@@ -118,5 +132,24 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
         moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) *100.0)
     }
+
+    private fun showSettingsScreen() {
+        val settingsIntent = Intent(this, SettingsActivity::class.java).apply {
+            putExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, swipeScaleFactor)
+        }
+        startActivityForResult(settingsIntent, REQUEST_SETTINGS)
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_SETTINGS && resultCode == Activity.RESULT_OK) {
+            data?.let {
+                val swipeScaleFactor = it.getFloatExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, 0.1f)
+                this.swipeScaleFactor = swipeScaleFactor
+            }
+        }
+    }
+
 }
 
