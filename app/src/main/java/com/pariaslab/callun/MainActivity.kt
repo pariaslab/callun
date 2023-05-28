@@ -2,6 +2,7 @@ package com.pariaslab.callun
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.GestureDetector
@@ -30,13 +31,19 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private var selectedDate: Calendar = currentCalendar
 
     companion object {
-        private const val REQUEST_SETTINGS = 1
-        private const val DEFAULT_SWIPE_SCALE_FACTOR = 0.1f
+        const val REQUEST_SETTINGS = 1
+        const val DEFAULT_SWIPE_SCALE_FACTOR = 0.1f
+        const val SHARED_PREFS_NAME = "CallunPrefs"
+        const val SWIPE_SCALE_FACTOR_KEY = "SwipeScaleFactor"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Recuperar el valor de swipeScaleFactor de las preferencias compartidas
+        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        swipeScaleFactor = sharedPrefs.getFloat(SWIPE_SCALE_FACTOR_KEY, DEFAULT_SWIPE_SCALE_FACTOR)
 
         moonPhaseIcon = findViewById(R.id.moonIcon)
         moonPhaseTxt = findViewById(R.id.moonPhaseTxt)

@@ -1,6 +1,7 @@
 package com.pariaslab.callun
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
@@ -13,6 +14,13 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var swipeScaleSeekBar: SeekBar
     private lateinit var swipeScaleLabel: TextView
 
+    companion object {
+        const val DEFAULT_SWIPE_SCALE_FACTOR = 0.1f
+        const val EXTRA_SWIPE_SCALE_FACTOR = "extra_swipe_scale_factor"
+        const val SHARED_PREFS_NAME = "CallunPrefs"
+        const val SWIPE_SCALE_FACTOR_KEY = "SwipeScaleFactor"
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
@@ -20,9 +28,17 @@ class SettingsActivity : AppCompatActivity() {
         swipeScaleSeekBar = findViewById(R.id.swipeScaleSeekBar)
         swipeScaleLabel = findViewById(R.id.swipeScaleLabel)
 
-        val currentSwipeScaleFactor = intent.getFloatExtra(EXTRA_SWIPE_SCALE_FACTOR, DEFAULT_SWIPE_SCALE_FACTOR)
+        // Recuperar el valor de swipeScaleFactor de las preferencias compartidas
+        val sharedPrefs = getSharedPreferences(MainActivity.SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        val currentSwipeScaleFactor = sharedPrefs.getFloat(
+            MainActivity.SWIPE_SCALE_FACTOR_KEY,
+            MainActivity.DEFAULT_SWIPE_SCALE_FACTOR
+        )
+
+        // val currentSwipeScaleFactor = intent.getFloatExtra(EXTRA_SWIPE_SCALE_FACTOR, DEFAULT_SWIPE_SCALE_FACTOR)
         val currentSwipeScaleProgress = (currentSwipeScaleFactor * 100).toInt()
         swipeScaleSeekBar.progress = currentSwipeScaleProgress
+        swipeScaleLabel.text = "Valor de swipeScaleFactor: $currentSwipeScaleFactor"
 
         swipeScaleSeekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -46,6 +62,13 @@ class SettingsActivity : AppCompatActivity() {
         val saveButton = findViewById<Button>(R.id.saveButton)
         saveButton.setOnClickListener {
             val newSwipeScaleFactor = swipeScaleSeekBar.progress / 100f
+
+            // Guardar el nuevo valor en las preferencias compartidas
+            val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+            val editor = sharedPrefs.edit()
+            editor.putFloat(SWIPE_SCALE_FACTOR_KEY, newSwipeScaleFactor)
+            editor.apply()
+
             val resultIntent = Intent().apply {
                 putExtra(EXTRA_SWIPE_SCALE_FACTOR, newSwipeScaleFactor)
             }
@@ -54,8 +77,4 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    companion object {
-        private const val DEFAULT_SWIPE_SCALE_FACTOR = 0.1f
-        const val EXTRA_SWIPE_SCALE_FACTOR = "extra_swipe_scale_factor"
-    }
 }
