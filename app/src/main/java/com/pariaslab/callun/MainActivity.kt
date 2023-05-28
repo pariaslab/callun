@@ -5,20 +5,22 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.GestureDetector
+import android.view.Menu
+import android.view.MenuItem
 import android.view.MotionEvent
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.callun.R
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var gestureDetector: GestureDetector
     private var swipeScaleFactor: Float = 0.1f // Scale factor for swipe displacement of days
-    private var isScrolling = false // Indicador de si se está realizando un desplazamiento
+    private var isScrolling = false // Indicates if there is a swipe in progress
 
     private lateinit var selectDateEditText: EditText
     private lateinit var moonPhaseIcon: ImageView
@@ -36,9 +38,9 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        moonPhaseIcon = findViewById<ImageView>(R.id.moonIcon)
-        moonPhaseTxt = findViewById<TextView>(R.id.moonPhaseTxt)
-        selectDateEditText = findViewById<EditText>(R.id.selectDateEditText)
+        moonPhaseIcon = findViewById(R.id.moonIcon)
+        moonPhaseTxt = findViewById(R.id.moonPhaseTxt)
+        selectDateEditText = findViewById(R.id.selectDateEditText)
 
         updateUi(selectedDate)
 
@@ -49,11 +51,6 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             gestureDetector.onTouchEvent(event)
             handleTouchEvent(event)
             true
-        }
-
-        val settingsButton = findViewById<Button>(R.id.settingsButton)
-        settingsButton.setOnClickListener {
-            showSettingsScreen()
         }
 
         selectDateEditText.setOnClickListener {
@@ -79,19 +76,25 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
     }
 
-    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+    override fun onFling(
+        e1: MotionEvent,
+        e2: MotionEvent,
+        velocityX: Float,
+        velocityY: Float
+    ): Boolean {
         return false
     }
 
     private fun handleTouchEvent(event: MotionEvent) {
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
-                // Acción cuando se toca la pantalla
-                isScrolling = true // Indicar que se está realizando un desplazamiento
+                // Action on screen touch
+                isScrolling = true // start swipe
             }
+
             MotionEvent.ACTION_UP -> {
-                // Acción cuando se levanta el dedo
-                isScrolling = false // Indicar que se ha detenido el desplazamiento
+                // Action when user lift finger
+                isScrolling = false // stop swipe
             }
         }
     }
@@ -106,8 +109,13 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         return true
     }
 
-    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
-        if (isScrolling) { // Verificar si se está realizando un desplazamiento
+    override fun onScroll(
+        e1: MotionEvent,
+        e2: MotionEvent,
+        distanceX: Float,
+        distanceY: Float
+    ): Boolean {
+        if (isScrolling) { // Verify if the user is scrolling
             val daysToMove = (distanceX * swipeScaleFactor).toInt()
             selectedDate.add(Calendar.DAY_OF_MONTH, -daysToMove)
             updateUi(selectedDate)
@@ -130,24 +138,35 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private fun updateUi(date: Calendar) {
         selectDateEditText.setText(getSelectedDateTxt(date))
         moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
-        moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) *100.0)
+        moonPhaseTxt.text =
+            String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) * 100.0)
     }
-
-    private fun showSettingsScreen() {
-        val settingsIntent = Intent(this, SettingsActivity::class.java).apply {
-            putExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, swipeScaleFactor)
-        }
-        startActivityForResult(settingsIntent, REQUEST_SETTINGS)
-    }
-
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_SETTINGS && resultCode == Activity.RESULT_OK) {
             data?.let {
-                val swipeScaleFactor = it.getFloatExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, 0.1f)
+                val swipeScaleFactor =
+                    it.getFloatExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, 0.1f)
                 this.swipeScaleFactor = swipeScaleFactor
             }
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivityForResult(intent, REQUEST_SETTINGS)
+                true
+            }
+
+            else -> super.onOptionsItemSelected(item)
         }
     }
 
