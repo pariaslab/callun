@@ -9,36 +9,25 @@
     android:padding="16dp"
     tools:context="com.pariaslab.callun.MainActivity">
 
-    <LinearLayout
-        android:id="@+id/dyn_layout"
-        android:layout_width="fill_parent"
+
+    <TextView
+        android:text="Fase lunar"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="10dip" >
+        android:textSize="22sp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold" />
 
-
-        <TextView
-            android:text="Fase lunar al día: "
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="22sp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/selectDateEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:autofillHints="Fecha"
-            android:clickable="true"
-            android:focusable="false"
-            android:gravity="top|center_horizontal"
-            android:hint="Seleccionar fecha"
-            android:minHeight="48dp" />
-
-
-    </LinearLayout>
-
+    <EditText
+        android:id="@+id/selectDateEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:autofillHints="Fecha"
+        android:clickable="true"
+        android:focusable="false"
+        android:gravity="top|center_horizontal"
+        android:hint="Seleccionar fecha"
+        android:minHeight="48dp" />
 
     <ImageView
         android:id="@+id/moonIcon"

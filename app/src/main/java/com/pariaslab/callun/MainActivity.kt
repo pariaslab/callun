@@ -2,6 +2,8 @@ package com.pariaslab.callun
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -10,26 +12,36 @@ import com.example.callun.R
 import java.text.SimpleDateFormat
 import java.util.*
 
+class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
+    private lateinit var gestureDetector: GestureDetector
+    private val swipeScaleFactor = 0.07f // Scale factor for swipe displacement of days
+    private var isScrolling = false // Indicador de si se está realizando un desplazamiento
 
-class MainActivity : AppCompatActivity() {
+    private lateinit var selectDateEditText: EditText
+    private lateinit var moonPhaseIcon: ImageView
+    private lateinit var moonPhaseTxt: TextView
+
+    private val currentCalendar: Calendar = Calendar.getInstance()
+    private var selectedDate: Calendar = currentCalendar
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        //resources
-        val moonPhaseIcon = findViewById<ImageView>(R.id.moonIcon)
-        val moonPhaseTxt = findViewById<TextView>(R.id.moonPhaseTxt)
-        val selectDateEditText = findViewById<EditText>(R.id.selectDateEditText)
+        moonPhaseIcon = findViewById<ImageView>(R.id.moonIcon)
+        moonPhaseTxt = findViewById<TextView>(R.id.moonPhaseTxt)
+        selectDateEditText = findViewById<EditText>(R.id.selectDateEditText)
 
-        fun updateUi(date: Calendar) {
-            selectDateEditText.setText(getSelectedDateTxt(date))
-            moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
-            moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) *100.0)
-        }
-
-        val currentCalendar = Calendar.getInstance()
-        var selectedDate = currentCalendar
         updateUi(selectedDate)
+
+        // Gestures
+        gestureDetector = GestureDetector(this, this)
+
+        moonPhaseIcon.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            handleTouchEvent(event)
+            true
+        }
 
         selectDateEditText.setOnClickListener {
             val calendar = Calendar.getInstance()
@@ -52,9 +64,59 @@ class MainActivity : AppCompatActivity() {
             datePickerDialog.show()
         }
     }
+
+    override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
+        return false
+    }
+
+    private fun handleTouchEvent(event: MotionEvent) {
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                // Acción cuando se toca la pantalla
+                isScrolling = true // Indicar que se está realizando un desplazamiento
+            }
+            MotionEvent.ACTION_UP -> {
+                // Acción cuando se levanta el dedo
+                isScrolling = false // Indicar que se ha detenido el desplazamiento
+            }
+        }
+    }
+
+    override fun onDown(e: MotionEvent): Boolean {
+        return true
+    }
+
+    override fun onShowPress(e: MotionEvent) {}
+
+    override fun onSingleTapUp(e: MotionEvent): Boolean {
+        return true
+    }
+
+    override fun onScroll(e1: MotionEvent, e2: MotionEvent, distanceX: Float, distanceY: Float): Boolean {
+        if (isScrolling) { // Verificar si se está realizando un desplazamiento
+            val daysToMove = (distanceX * swipeScaleFactor).toInt()
+            selectedDate.add(Calendar.DAY_OF_MONTH, -daysToMove)
+            updateUi(selectedDate)
+        }
+        return true
+    }
+
+    override fun onLongPress(e: MotionEvent) {}
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        return gestureDetector.onTouchEvent(event)
+    }
+
+    private fun getSelectedDateTxt(date: Calendar): String {
+        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return formatter.format(date.time)
+    }
+
+
+    private fun updateUi(date: Calendar) {
+        selectDateEditText.setText(getSelectedDateTxt(date))
+        moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
+        moonPhaseTxt.text = String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) *100.0)
+    }
 }
 
-private fun getSelectedDateTxt(date: Calendar): String {
-    val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    return formatter.format(date.time)
-}
