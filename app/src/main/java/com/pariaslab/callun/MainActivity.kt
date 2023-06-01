@@ -153,7 +153,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
         //moonPhaseIcon.setRotation(180.0F)
         moonPhaseTxt.text =
-            String.format("%.0f %% del ciclo desde luna nueva", moonLapse.fraction * 100.0)
+            String.format("%.0f %% iluminado de superficie visible", moonLapse.fraction * 100.0)
         moonPhaseTxtData.text =
             String.format("Distancia a la tierra: %.0f km\n" +
                           "Altitud Sobre el horizonte: %.0f °",
