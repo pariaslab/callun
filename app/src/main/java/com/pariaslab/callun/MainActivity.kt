@@ -18,6 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
 class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var gestureDetector: GestureDetector
     private var swipeScaleFactor: Float = 0.1f // Scale factor for swipe displacement of days
@@ -26,6 +27,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var selectDateEditText: EditText
     private lateinit var moonPhaseIcon: ImageView
     private lateinit var moonPhaseTxt: TextView
+    private lateinit var moonPhaseTxtData: TextView
 
     private val currentCalendar: Calendar = Calendar.getInstance()
     private var selectedDate: Calendar = currentCalendar
@@ -42,11 +44,12 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
         setContentView(R.layout.activity_main)
 
         // Recuperar el valor de swipeScaleFactor de las preferencias compartidas
-        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE)
+        val sharedPrefs = getSharedPreferences(SHARED_PREFS_NAME, MODE_PRIVATE)
         swipeScaleFactor = sharedPrefs.getFloat(SWIPE_SCALE_FACTOR_KEY, DEFAULT_SWIPE_SCALE_FACTOR)
 
         moonPhaseIcon = findViewById(R.id.moonIcon)
         moonPhaseTxt = findViewById(R.id.moonPhaseTxt)
+        moonPhaseTxtData = findViewById(R.id.moonPhaseTxtData)
         selectDateEditText = findViewById(R.id.selectDateEditText)
 
         updateUi(selectedDate)
@@ -143,15 +146,25 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
 
     private fun updateUi(date: Calendar) {
+        val moonLapse = getMoonLapse(date)
+        val moonPosition = getMoonPosition(date)
+        val moonTimes = getMoonTimes(date)
         selectDateEditText.setText(getSelectedDateTxt(date))
         moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
+        //moonPhaseIcon.setRotation(180.0F)
         moonPhaseTxt.text =
-            String.format("%.0f %% del ciclo desde luna nueva", getMoonLapse(date) * 100.0)
+            String.format("%.0f %% del ciclo desde luna nueva", moonLapse.fraction * 100.0)
+        moonPhaseTxtData.text =
+            String.format("Distancia a la tierra: %.0f km\n" +
+                          "Altitud Sobre el horizonte: %.0f °",
+                          moonPosition.distance,
+                          moonPosition.altitude)
+
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_SETTINGS && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_SETTINGS && resultCode == RESULT_OK) {
             data?.let {
                 val swipeScaleFactor =
                     it.getFloatExtra(SettingsActivity.EXTRA_SWIPE_SCALE_FACTOR, 0.1f)
