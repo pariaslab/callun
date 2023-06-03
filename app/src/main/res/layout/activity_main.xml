@@ -11,12 +11,13 @@
 
 
     <TextView
-        android:text="Fase lunar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="22sp"
+        android:text="Fase lunar"
         android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:visibility="invisible" />
 
     <EditText
         android:id="@+id/selectDateEditText"
@@ -54,5 +55,14 @@
         android:textSize="14sp"
         android:gravity="left"
         android:textColor="@android:color/white"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/nextFMTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:textColor="@color/design_default_color_error"
+        android:textSize="18sp"
         android:textStyle="bold" />
 </LinearLayout>

@@ -2,6 +2,7 @@ package com.pariaslab.callun
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     private lateinit var selectDateEditText: EditText
     private lateinit var moonPhaseIcon: ImageView
     private lateinit var moonPhaseTxt: TextView
+    private lateinit var nextFMTxt: TextView
     private lateinit var moonPhaseTxtData: TextView
 
     private val currentCalendar: Calendar = Calendar.getInstance()
@@ -49,6 +51,7 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
 
         moonPhaseIcon = findViewById(R.id.moonIcon)
         moonPhaseTxt = findViewById(R.id.moonPhaseTxt)
+        nextFMTxt = findViewById(R.id.nextFMTxt)
         moonPhaseTxtData = findViewById(R.id.moonPhaseTxtData)
         selectDateEditText = findViewById(R.id.selectDateEditText)
 
@@ -72,10 +75,14 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             val datePickerDialog = DatePickerDialog(
                 this,
                 { _, year, month, dayOfMonth ->
-                    val selectedCalendar = Calendar.getInstance()
-                    selectedCalendar.set(year, month, dayOfMonth)
-                    selectedDate = selectedCalendar
-                    updateUi(selectedDate)
+                    //val selectedCalendar = Calendar.getInstance()
+                    //selectedCalendar.set(year, month, dayOfMonth)
+                    //selectedDate = selectedCalendar
+                    selectedDate = Calendar.getInstance().apply {
+                        set(year, month, dayOfMonth)
+                    }
+                    showTimePickerDialog()
+
                 },
                 year,
                 month,
@@ -84,6 +91,29 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
             datePickerDialog.show()
         }
 
+    }
+
+    private fun showTimePickerDialog() {
+        val currentHour = selectedDate.get(Calendar.HOUR_OF_DAY)
+        val currentMinute = selectedDate.get(Calendar.MINUTE)
+
+        val timePickerDialog = TimePickerDialog(
+            this,
+            { _, hourOfDay, minute ->
+                // Actualizar la hora seleccionada en el objeto Calendar
+                selectedDate.apply {
+                    set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    set(Calendar.MINUTE, minute)
+                }
+
+                // Mostrar la fecha y hora seleccionadas
+                updateUi(selectedDate)                },
+            currentHour,
+            currentMinute,
+            false
+        )
+
+        timePickerDialog.show()
     }
 
     override fun onFling(
@@ -140,25 +170,32 @@ class MainActivity : AppCompatActivity(), GestureDetector.OnGestureListener {
     }
 
     private fun getSelectedDateTxt(date: Calendar): String {
-        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
         return formatter.format(date.time)
     }
 
 
     private fun updateUi(date: Calendar) {
+
         val moonLapse = getMoonLapse(date)
         val moonPosition = getMoonPosition(date)
         val moonTimes = getMoonTimes(date)
+
+        val ffm = getFullMoons(date).time
+        val formattedDate = SimpleDateFormat("dd/MM/yyyy HH:mm").format(ffm.time)
+
         selectDateEditText.setText(getSelectedDateTxt(date))
         moonPhaseIcon.setImageResource(getMoonLapseIcon(date))
-        //moonPhaseIcon.setRotation(180.0F)
         moonPhaseTxt.text =
-            String.format("%.0f %% iluminado de superficie visible", moonLapse.fraction * 100.0)
+            String.format("Superficie visible iluminada: %.0f %%",
+                          moonLapse.fraction * 100.0)
         moonPhaseTxtData.text =
             String.format("Distancia a la tierra: %.0f km\n" +
                           "Altitud Sobre el horizonte: %.0f °",
                           moonPosition.distance,
                           moonPosition.altitude)
+
+        nextFMTxt.text = "\nPróxima luna llena: \n" + formattedDate
 
     }
 

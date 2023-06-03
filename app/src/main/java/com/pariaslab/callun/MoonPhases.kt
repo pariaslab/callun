@@ -3,6 +3,7 @@ package com.pariaslab.callun
 import android.util.Log
 import com.example.callun.R
 import org.shredzone.commons.suncalc.MoonIllumination
+import org.shredzone.commons.suncalc.MoonPhase
 import org.shredzone.commons.suncalc.MoonPosition
 import org.shredzone.commons.suncalc.MoonTimes
 import org.shredzone.commons.suncalc.SunTimes
@@ -63,4 +64,37 @@ fun getMoonTimes(date: Calendar): MoonTimes {
         .localTime()
         .execute()
     return times
+}
+
+fun getFullMoons(date: Calendar): Calendar {
+    val parameters: MoonPhase.Parameters = MoonPhase.compute()
+        .phase(MoonPhase.Phase.FULL_MOON)
+
+
+    val moonPhase: MoonPhase = parameters
+            .on(date)
+            .execute()
+    val nextFullMoon: LocalDate = moonPhase
+            .getTime()
+            .toLocalDate()
+
+    Log.i("FFM: ", nextFullMoon.toString())
+    if (moonPhase.isMicroMoon()) {
+            Log.i("FFM: ", " (micromoon)")
+    }
+    if (moonPhase.isSuperMoon()) {
+            Log.i("FFM: ", " (supermoon)")
+    }
+    return convertLocalDateToCalendar(nextFullMoon)
+}
+
+
+fun convertLocalDateToCalendar(localDate: LocalDate): Calendar {
+    val year = localDate.year
+    val month = localDate.monthValue - 1
+    val dayOfMonth = localDate.dayOfMonth
+
+    val calendar = Calendar.getInstance()
+    calendar.set(year, month, dayOfMonth)
+    return calendar
 }
